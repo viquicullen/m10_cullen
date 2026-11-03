@@ -1,0 +1,49 @@
+use ventas_tech_DB;
+
+select top 5 
+cantidad,
+precio_unitario,
+cantidad * precio_unitario as total_venta
+from ventas;
+
+
+--media y mediana
+
+Select 
+avg(cast(cantidad*precio_unitario as FLOAT)) AS media_ticket
+FRom ventas;
+
+select
+percentile_cont(0.5) within group (order by cantidad*precio_unitario) over() as mediana_ticket
+From Ventas;
+
+
+-- calculo de Q1,Q3 y IQR
+
+
+Select distinct
+percentile_cont(0.25)Within group (order by cantidad*precio_unitario) over() As Q1,
+percentile_cont(0.75)Within group (order by cantidad*precio_unitario) over() As Q3
+from ventas;
+
+
+WITH Quartiles AS (
+select distinct
+percentile_cont(0.25)Within group (order by cantidad*precio_unitario) over() As Q1,
+percentile_cont(0.75)Within group (order by cantidad*precio_unitario) over() As Q3
+from ventas
+)
+select 
+Q1,
+Q3,
+q3-Q1 as IQR,
+Q1 -1.5*(Q3-Q1) as limite_inferior,
+Q3 +1.5*(Q3-Q1) as limite_superior
+from quartiles;
+
+
+
+--recuento de outlierts-
+select count(*) as cantidad_outliers
+from ventas where cantidad*precio_unitario >1626.75;
+
